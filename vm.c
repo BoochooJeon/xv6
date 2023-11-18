@@ -43,6 +43,9 @@ seginit(void)
 static pte_t *
 ittraverse(int pid, pde_t *pgdir, const void *va, int alloc) //You don't have to consider the pgdir argument
 {
+  //NOTE: 2. vm.c에서 ittraverse() 함수를 구현할 때, va가 KERNBASE보다 크다면, &XV6_KERN[(uint)(V2P(va)/PGSIZE)] 를 return 해주세요.
+  // ittraverse() 코드에서 int alloc 변수에 대해서는 고려 안하셔도 됩니다.
+  //PPT에서 memtest를 수행하라고 나와있는데, memtest대신 console에서 ls를 입력할때 hash collision이 발생하는 것을 캡쳐해서 보여주세요. PPT에서 memtest의 result format과 동일하게 출력해주셔야 합니다.
 	uint idx; 
 	//TODO: File the code that returns corresponding PTE_XV6[idx]'s address for given pid and VA
 	//1. Handle two case: the VA is over KERNBASE or not.
