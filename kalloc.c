@@ -31,6 +31,19 @@ struct {
   struct run *freelist;
 } kmem;
 
+// hash function
+uint fnv1a_hash(int pid, uint vpn) {
+    const uint32_t fnv_prime = 0x811C9DC5;
+    uint32_t hash = 0x01000193;
+
+    // PID와 VPN을 결합하여 해시 계산
+    hash = (hash ^ (uint32_t)pid) * fnv_prime;
+    hash = (hash ^ (uint32_t)vpn) * fnv_prime;
+
+    return (hash % MAXENTRY);
+}
+
+
 // Initialization happens in two phases.
 // 1. main() calls kinit1() while still using entrypgdir to place just
 // the pages mapped by entrypgdir on free list.
@@ -84,7 +97,7 @@ void kfree(int pid, char *v){
 
 
   //3. For memset, Convert the physical address for free to kernel's virtual address by using P2V macro
-  memset(kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
+  memset(&kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
 }
 
 // Allocate one 4096-byte page of physical memory.
@@ -110,17 +123,6 @@ kalloc(int pid, char *v)
   return 0;
 }
 
-
-uint fnv1a_hash(int pid, uint vpn) {
-    const uint32_t fnv_prime = 0x811C9DC5;
-    uint32_t hash = 0x01000193;
-
-    // PID와 VPN을 결합하여 해시 계산
-    hash = (hash ^ (uint32_t)pid) * fnv_prime;
-    hash = (hash ^ (uint32_t)vpn) * fnv_prime;
-
-    return (hash % MAXENTRY);
-}
 
 
 
