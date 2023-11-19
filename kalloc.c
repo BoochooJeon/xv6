@@ -8,6 +8,8 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "spinlock.h"
+#include <stdint.h>
+#include <stdio.h>
 
 #define MAXENTRY 57334 
 
@@ -68,8 +70,19 @@ void kfree(int pid, char *v){
 
   uint kv, idx;
   //TODO: Fill the code that supports kfree
+
   //1. Find the corresponding physical address for given pid and VA
+  uint vpn = PDX(v);
+  idx = fnv1a_hash(pid, vpn);
+
+  kv = PTE_XV6[idx];
+
   //2. Initialize the PID[idx], VPN[idx], and PTE_XV6[idx]
+  PID[idx] = -1;
+  VPN[idx] = 0;
+  PTE_XV6[idx] = 0;
+
+
   //3. For memset, Convert the physical address for free to kernel's virtual address by using P2V macro
   memset(kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
 }
@@ -96,6 +109,20 @@ kalloc(int pid, char *v)
     release(&kmem.lock);
   return 0;
 }
+
+
+uint fnv1a_hash(int pid, uint vpn) {
+    const uint32_t fnv_prime = 0x811C9DC5;
+    uint32_t hash = 0x01000193;
+
+    // PID와 VPN을 결합하여 해시 계산
+    hash = (hash ^ (uint32_t)pid) * fnv_prime;
+    hash = (hash ^ (uint32_t)vpn) * fnv_prime;
+
+    return (hash % MAXENTRY);
+}
+
+
 
 /*
 char*
