@@ -69,12 +69,15 @@ struct segdesc {
 // |      Index     |      Index     |                     |
 // +----------------+----------------+---------------------+
 //  \--- PDX(va) --/ \--- PTX(va) --/
+//  \----------- VTX(va) -----------/
 
 // page directory index
 #define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF)
 
 // page table index
 #define PTX(va)         (((uint)(va) >> PTXSHIFT) & 0x3FF)
+
+#define VTX(va)         (((uint)(va) >> 12) & 0xFFFFF)
 
 // offset within page
 #define OWP(va)         ((uint)(va) & 0xFFF)

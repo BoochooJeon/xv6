@@ -85,10 +85,10 @@ void kfree(int pid, char *v){
   //TODO: Fill the code that supports kfree
 
   //1. Find the corresponding physical address for given pid and VA
-  uint vpn = PDX(v);
+  uint vpn = VTX(v);
   idx = fnv1a_hash(pid, vpn);
 
-  kv = PTE_XV6[idx];
+  kv = P2V(PTE_XV6[idx]);
 
   //2. Initialize the PID[idx], VPN[idx], and PTE_XV6[idx]
   PID[idx] = -1;
@@ -100,12 +100,9 @@ void kfree(int pid, char *v){
   memset(&kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
 }
 
-// Allocate one 4096-byte page of physical memory.
-// Returns a pointer that the kernel can use.
-// Returns 0 if the memory cannot be allocated.
 
 char*
-kalloc(int pid, char *v)
+kalloc(int pid, char *v)// 여기서 v는 va? pa?
 {
 
   int idx;
@@ -114,7 +111,7 @@ kalloc(int pid, char *v)
     acquire(&kmem.lock);
 
   //TODO: Fill the code that supports kalloc
-  //1. Find the freespace by hash function
+  //1. Find the freespace by hash function // 왜 해시function으로 찾아야할지 이해가 안됨
   //2. Consider the case that v is -1, which means that the caller of kalloc is kernel so the virtual address is decided by the allocated physical address (P2V) 
   //3. Update the value of PID[idx] and VPN[idx] (Do not update the PTE_XV6[idx] in this code!)
   //4. Return (char*)P2V(physical address), if there is no free space, return 0
