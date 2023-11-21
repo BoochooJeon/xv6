@@ -49,6 +49,12 @@ ittraverse(int pid, pde_t *pgdir, const void *va, int alloc) //You don't have to
 	uint idx; 
 	//TODO: File the code that returns corresponding PTE_XV6[idx]'s address for given pid and VA
 	//1. Handle two case: the VA is over KERNBASE or not.
+  uint *va_ptr = (uint *)va;
+  if(*va_ptr > KERNBASE) { // va가 맞는지 잘 모르겠음. *va여야하지않나?
+    return &PTE_KERN[(uint)(V2P(va)/PGSIZE)]; 
+  } else {
+    // user va에 대해서 Page Table을 탐색해서 PTE를 리턴함
+  }
 	//2. For former case, return &PTE_KERN[(uint)V2P(physical address)];
 	//3. For latter case, find the phyiscal address for given pid and va using inverted page table, and return &PTE_XV6[idx]
 }

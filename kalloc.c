@@ -88,21 +88,27 @@ void kfree(int pid, char *v){
   uint vpn = VTX(v);
   idx = fnv1a_hash(pid, vpn);
 
-  kv = P2V(PTE_XV6[idx]);
-
   //2. Initialize the PID[idx], VPN[idx], and PTE_XV6[idx]
   PID[idx] = -1;
   VPN[idx] = 0;
-  PTE_XV6[idx] = 0;
+  PTE_XV6[idx] = 0; //  pa찾은다음에 PTE_P 마스킹 작업 진행해야함
 
 
   //3. For memset, Convert the physical address for free to kernel's virtual address by using P2V macro
+  kv = (uint)P2V(v);
   memset(&kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
 }
 
 
+//질문모음 
+// 1. 할당 자체는 어케하는것인가? mem변수로 해야하나???
+// 2. PTE_XV6는 proj Ppt에 나와있는 PTE에 해당하는 것인가?
+// 3. PTE_KERN 은 어디에 쓰는것인가?
+// 4. XV6_KERN 변수는 무엇인가? PTE_KERN의 오타인가? 
+// 5. Kalloc이 P2V로 반환해서 주는데, isKernel = true인 경우만 그렇게 처리해줘야하는게 아닌가??? 
+// 6. Kalloc freespace를 해시함수로 찾아야 하는이유? 해시함수로 Idx 찾고 PTE_XV6에 접근해서 PTE_P 여부 확인 맞나?
 char*
-kalloc(int pid, char *v)// 여기서 v는 va? pa?
+kalloc(int pid, char *v)// 여기서 v는 va? pa?, va인듯 
 {
 
   int idx;

@@ -97,15 +97,15 @@ struct segdesc {
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
 // Page table/directory entry flags.
-#define PTE_P           (1 << 0)   // Present
-#define PTE_W           (1 << 1)   // Writeable
-#define PTE_U           (1 << 2)   // User
-#define PTE_SBRK        (1 << 10)  // sbrk'ed memory (malloc)
-#define PTE_PS          0x080   // Page Size
+#define PTE_P           (1 << 0)   // Present // 페이지가 물리적 메모리에 존재하는지 여부를 나타냅니다. 값이 1이면 페이지가 메모리에 있으며, 0이면 페이지 폴트가 발생합니다.
+#define PTE_W           (1 << 1)   // Writeable // 페이지의 쓰기 가능 여부를 나타냅니다. 1이면 쓰기가 가능하고, 0이면 읽기 전용입니다.
+#define PTE_U           (1 << 2)   // User // 페이지에 대한 접근 수준을 나타냅니다. 1이면 사용자 수준의 코드에서 접근할 수 있고, 0이면 커널 수준에서만 접근할 수 있습니다.
+#define PTE_SBRK        (1 << 10)  // sbrk'ed memory (malloc) // 
+#define PTE_PS          0x080   // Page Size // 128?
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
+#define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF) // 주소는 12비트를 제외한 나머지
+#define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF) // 플래그는 하위 12비트
 
 #ifndef __ASSEMBLER__
 typedef uint pte_t;
