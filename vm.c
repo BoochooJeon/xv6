@@ -75,7 +75,7 @@ k_walkpgdir(pde_t *pgdir, const void *va, int alloc)
     // The permissions here are overly generous, but they can
     // be further restricted by the permissions in the page table
     // entries, if necessary.
-    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U; // V2P 는 저장용
   }
   return &pgtab[PTX(va)];
 }
@@ -161,7 +161,7 @@ setupkvm(int is_kernel)
   }
   if (first_setup == 0 && is_kernel == 0) first_setup = 1;
   
-  for(k = kmap; k < &kmap[NELEM(kmap)]; k++)
+  for(k =  ; k < &kmap[NELEM(kmap)]; k++)
     if(mappages(0, is_kernel, pgdir, k->virt, k->phys_end - k->phys_start,
                 (uint)k->phys_start, k->perm) < 0) {
       freevm(0, pgdir);
@@ -419,7 +419,7 @@ static uint __virt_to_phys(int pid, int shadow, pde_t *pgdir, struct proc *proc,
   
   if (shadow == 1){
 	pde_t *pde = &pgdir[PDX(va)];
-	pte_t *pgtable = (pte_t*)P2V(PTE_ADDR(*pde));
+	pte_t *pgtable = (pte_t*)P2V(PTE_ADDR(*pde)); // P2V 읽을때 사옹
 	pa = PTE_ADDR(pgtable[PTX(va)]) | OWP(va);
 	return pa;
   } 
