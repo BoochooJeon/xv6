@@ -10,6 +10,7 @@
 #include "spinlock.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define MAXENTRY 57334 
 
@@ -93,10 +94,12 @@ void kfree(int pid, char *v){
   VPN[idx] = 0;
   PTE_XV6[idx] = 0; //  pa찾은다음에 PTE_P 마스킹 작업 진행해야함
 
+  kv = idx * PGSIZE + PACONST;
+  // 4MB 공간 남겨야함
   // kfree에 들어오는 가상주소, 물리주소
   //3. For memset, Convert the physical address for free to kernel's virtual address by using P2V macro
-  // kv = (uint)P2V();
-  memset(&kv, 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
+
+  memset(P2V((char *)kv), 1, PGSIZE); //TODO: You must perform memset for P2V(physical address);
 }
 
 
@@ -118,6 +121,22 @@ kalloc(int pid, char *v)// 여기서 v는 va? pa?, va인듯
 
   //TODO: Fill the code that supports kalloc
   //1. Find the freespace by hash function // 왜 해시function으로 찾아야할지 이해가 안됨
+  uint vpn = VTX(v);
+  idx = fnv1a_hash(pid, vpn);
+
+  if((int)v == -1) {
+    return (char*)P2V(idx * PGSIZE + PACONST);
+  }
+
+  PID[idx] = pid;
+  VPN[idx] = vpn;
+  PTE_XV6[idx] = 0; //TODO: 적절한 값 넣기, collition handling
+
+  bool is_alloc = false;
+  if(!is_alloc) {
+    return (char*)P2V(idx * PGSIZE + PACONST);
+  }
+
   //2. Consider the case that v is -1, which means that the caller of kalloc is kernel so the virtual address is decided by the allocated physical address (P2V) 
   //3. Update the value of PID[idx] and VPN[idx] (Do not update the PTE_XV6[idx] in this code!)
   //4. Return (char*)P2V(physical address), if there is no free space, return 0

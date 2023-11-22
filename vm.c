@@ -6,6 +6,10 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include <stdint.h>
+#include <stdio.h>
+
+#define MAXENTRY 57334 
 
 extern char data[];  // defined by kernel.ld
 extern uint PTE_XV6[];
@@ -16,6 +20,20 @@ pde_t *kpgdir;  // for use in scheduler()
 static pde_t *null_pgdir; // used to force page faults
 
 int first_setup = 0;
+
+
+// hash function
+uint fnv1a_hash(int pid, uint vpn) {
+    const uint32_t fnv_prime = 0x811C9DC5;
+    uint32_t hash = 0x01000193;
+
+    // PID와 VPN을 결합하여 해시 계산
+    hash = (hash ^ (uint32_t)pid) * fnv_prime;
+    hash = (hash ^ (uint32_t)vpn) * fnv_prime;
+
+    return (hash % MAXENTRY);
+}
+
 
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
@@ -53,10 +71,15 @@ ittraverse(int pid, pde_t *pgdir, const void *va, int alloc) //You don't have to
   if(*va_ptr > KERNBASE) { // va가 맞는지 잘 모르겠음. *va여야하지않나?
     return &PTE_KERN[(uint)(V2P(va)/PGSIZE)]; 
   } else {
+    uint vpn = VTX(va);
+    idx = fnv1a_hash(pid, vpn);
+
+    return &PTE_XV6[idx];
     // user va에 대해서 Page Table을 탐색해서 PTE를 리턴함
   }
 	//2. For former case, return &PTE_KERN[(uint)V2P(physical address)];
 	//3. For latter case, find the phyiscal address for given pid and va using inverted page table, and return &PTE_XV6[idx]
+  return 0;
 }
 
 static pte_t *
@@ -100,7 +123,7 @@ mappages(int pid, int is_kernel, pde_t *pgdir, void *va, uint size, uint pa, int
       return -1;
     if(*pte & PTE_P)
       panic("remap");
-    *pte = pa | perm | PTE_P;
+    *pte = pa | perm | PTE_P; // 이거 매우 중요
     if(a == last)
       break;
     a += PGSIZE;
@@ -161,7 +184,7 @@ setupkvm(int is_kernel)
   }
   if (first_setup == 0 && is_kernel == 0) first_setup = 1;
   
-  for(k =  ; k < &kmap[NELEM(kmap)]; k++)
+  for(k = kmap; k < &kmap[NELEM(kmap)]; k++)
     if(mappages(0, is_kernel, pgdir, k->virt, k->phys_end - k->phys_start,
                 (uint)k->phys_start, k->perm) < 0) {
       freevm(0, pgdir);
