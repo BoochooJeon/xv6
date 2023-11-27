@@ -33,7 +33,7 @@ struct {
 } kmem;
 
 // hash function
-uint fnv1a_hash(int pid, uint vpn) {
+uint fnv1a_hash1(int pid, uint vpn) {
     const uint32_t fnv_prime = 0x811C9DC5;
     uint32_t hash = 0x01000193;
 
@@ -87,14 +87,14 @@ void kfree(int pid, char *v){
 
   //1. Find the corresponding physical address for given pid and VA
   uint vpn = VTX(v);
-  idx = fnv1a_hash(pid, vpn);
+  idx = fnv1a_hash1(pid, vpn);
 
   //2. Initialize the PID[idx], VPN[idx], and PTE_XV6[idx]
   PID[idx] = -1;
   VPN[idx] = 0;
   PTE_XV6[idx] = 0; //  pa찾은다음에 PTE_P 마스킹 작업 진행해야함
 
-  kv = idx * PGSIZE + PACONST;
+  kv = idx * PGSIZE ;
   // 4MB 공간 남겨야함
   // kfree에 들어오는 가상주소, 물리주소
   //3. For memset, Convert the physical address for free to kernel's virtual address by using P2V macro
@@ -122,10 +122,10 @@ kalloc(int pid, char *v)// 여기서 v는 va? pa?, va인듯
   //TODO: Fill the code that supports kalloc
   //1. Find the freespace by hash function // 왜 해시function으로 찾아야할지 이해가 안됨
   uint vpn = VTX(v);
-  idx = fnv1a_hash(pid, vpn);
+  idx = fnv1a_hash1(pid, vpn);
 
   if((int)v == -1) {
-    return (char*)P2V(idx * PGSIZE + PACONST);
+    return (char*)P2V(idx * PGSIZE);
   }
 
   PID[idx] = pid;
@@ -134,7 +134,7 @@ kalloc(int pid, char *v)// 여기서 v는 va? pa?, va인듯
 
   bool is_alloc = false;
   if(!is_alloc) {
-    return (char*)P2V(idx * PGSIZE + PACONST);
+    return (char*)P2V(idx * PGSIZE);
   }
 
   //2. Consider the case that v is -1, which means that the caller of kalloc is kernel so the virtual address is decided by the allocated physical address (P2V) 
