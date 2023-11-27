@@ -431,7 +431,7 @@ copyout(int pid, pde_t *pgdir, uint va, void *p, uint len)
  * The LOG macro should be used while performing early debugging only
  * and it'll most likely cause a crash during normal operations.
  */
-#define LOG 0
+#define LOG 1
 #define clprintf(...) if (LOG) cprintf(__VA_ARGS__)
 
 // Returns physical page address from virtual address
@@ -448,6 +448,8 @@ static uint __virt_to_phys(int pid, int shadow, pde_t *pgdir, struct proc *proc,
   } 
   //TODO: Fill the code that converts VA to PA for given pid
   //Hint: Use ittraverse!
+  pte = ittraverse(pid, pgdir, &va, 1);
+  pa = PTE_ADDR(*pte);
   return pa;
 }
 
@@ -457,6 +459,9 @@ static int __get_flags(int pid, pde_t *pgdir, struct proc *proc, uint va){
   pte_t *pte;
   //TODO: Fill the code that gets flags in PTE_XV6[idx] 
   //Hint: use the ittraverse and macro!
+  pte = ittraverse(pid, pgdir, &va, 1);
+  flags = PTE_FLAGS(pte);
+
   return flags;
 }
 // Same as __virt_to_phys(), but with extra log
